@@ -61,6 +61,16 @@ const routes = (req, res) => {
     if (pathname === "/usuario" && method === "PUT") {
         controlUsuarios.editarUsuarios(req, res);
     }
+
+    if (pathname === "/transferencia" && method === "POST") {
+        controlTransferencias.agregarTransferencias(req, res);
+    }
+
+    if (pathname === "/transferencias") {
+        controlTransferencias.mostrarTransferencias(req, res);
+    }
+   
+
 }
 
 

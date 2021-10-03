@@ -10,18 +10,18 @@ const getCurrentDate = async () => {
     return fecha[0].now
 }
 
-const getUserIdByName = async (userName) => {
-    sqlQuery = `select id from usuarios where nombre = '${userName}';`;
-    const response = await queries.dbPoolQuery(sqlQuery);
-    const idUser = JSON.parse(response);
-    return idUser[0].id;
-};
+// const getUserIdByName = async (userName) => {
+//     sqlQuery = `select id from usuarios where nombre = '${userName}';`;
+//     const response = await queries.dbPoolQuery(sqlQuery);
+//     const idUser = JSON.parse(response);
+//     return idUser[0].id;
+// };
 
-const getUserNameById = async (userId) => {
-    sqlQuery = `select nombre from usuarios where id = ${userId};`;
-    const response = await queries.dbPoolQuery(sqlQuery);
-    return JSON.parse(response)[0].nombre;
-};
+// const getUserNameById = async (userId) => {
+//     sqlQuery = `select nombre from usuarios where id = ${userId};`;
+//     const response = await queries.dbPoolQuery(sqlQuery);
+//     return JSON.parse(response)[0].nombre;
+// };
 
 const mostrarTransferencias = async (req, res) => {
     console.log("Opcion Mostrar Transferencias");
@@ -38,7 +38,6 @@ const mostrarTransferencias = async (req, res) => {
     let results;
     try {
         response = await queries.dbPoolQuery(sqlQuery);
-        console.log("response ", response);
         results = JSON.parse(response);
     } catch (error) {
         console.log("Error en mostrar transferencias: ", error.message);
@@ -47,7 +46,6 @@ const mostrarTransferencias = async (req, res) => {
             message: error.message
         }
     } finally {
-        console.log("results finally ", results);
         res.writeHead(200, { "Content-Type": "Application/json" });
         res.end(JSON.stringify(results));
     }

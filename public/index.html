@@ -126,7 +126,7 @@
         </div>
       </div>
     </div>
-    
+
     <script
       src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
       integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
@@ -252,10 +252,11 @@
         }),
       });
       const data = await response.json();
+      console.log("data en transf form ", data);
       location.reload();
     } catch (e) {
       console.log(e);
-      alert("Algo salió mal..." + e);
+      alert("Algo salió mal last..." + e);
     }
   });
 
@@ -299,6 +300,7 @@
     $(".transferencias").html("");
 
     data.forEach((t) => {
+      console.log("transferencia ", t);
       $(".transferencias").append(`
        <tr>
          <td> ${formatDate(t[4])} </td>

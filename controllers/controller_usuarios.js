@@ -4,7 +4,7 @@ const urlHandler = require("url");
 const mostrarUsuarios = async (req, res) => {
     console.log("Opcion Mostrar Usuarios");
     const sqlQuery = {
-        text: `select * from usuarios;`,
+        text: `select * from usuarios order by id;`,
         values: []
     };
     let response;
@@ -58,9 +58,10 @@ const editarUsuarios = async (req, res) => {
     })
 
     req.on("end", async () => {
+        console.log("editar usuarios, req end body", body);
         const sqlQuery = {
             text: `update usuarios set nombre = $2, balance = $3 where id = $1 returning *;`,
-            values: [urlHandler.parse(req.url, true).query.id, body.nombre, body.balance]
+            values: [urlHandler.parse(req.url, true).query.id, body.name, body.balance]
         };
         let response;
         try {

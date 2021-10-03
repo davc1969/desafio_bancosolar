@@ -10,23 +10,36 @@ const getCurrentDate = async () => {
     return fecha[0].now
 }
 
-const getUserid = async (userName) => {
+const getUserIdByName = async (userName) => {
     sqlQuery = `select id from usuarios where nombre = '${userName}';`;
     const response = await queries.dbPoolQuery(sqlQuery);
     const idUser = JSON.parse(response);
     return idUser[0].id;
-}
+};
+
+const getUserNameById = async (userId) => {
+    sqlQuery = `select nombre from usuarios where id = ${userId};`;
+    const response = await queries.dbPoolQuery(sqlQuery);
+    return JSON.parse(response)[0].nombre;
+};
 
 const mostrarTransferencias = async (req, res) => {
     console.log("Opcion Mostrar Transferencias");
+    let queryTransferencias = `select t.id, emis.nombre, recep.nombre, t.monto, t.fecha `;
+    queryTransferencias += `from transferencias as t `;
+    queryTransferencias += `inner join usuarios as emis on t.emisor = emis.id `
+    queryTransferencias += `inner join usuarios as recep on t.receptor = recep.id;`
     const sqlQuery = {
-        text: `select * from transferencias;`,
-        values: []
+        text: queryTransferencias,
+        values: [],
+        rowMode: 'array'
     };
-    let response;
+
+    let results;
     try {
         response = await queries.dbPoolQuery(sqlQuery);
-        console.log("lista de transferencias: ");
+        console.log("response ", response);
+        results = JSON.parse(response);
     } catch (error) {
         console.log("Error en mostrar transferencias: ", error.message);
         response = {
@@ -34,7 +47,9 @@ const mostrarTransferencias = async (req, res) => {
             message: error.message
         }
     } finally {
-        res.end(response);
+        console.log("results finally ", results);
+        res.writeHead(200, { "Content-Type": "Application/json" });
+        res.end(JSON.stringify(results));
     }
 };
 
@@ -50,30 +65,30 @@ const agregarTransferencias = async (req, res) => {
     req.on("end", async () => {
 
         const fecha = await getCurrentDate();
-        const idEmisor = await getUserid(body.emisor);
-        const idReceptor = await getUserid(body.receptor);
         const monto = parseFloat(body.monto);
+        const queryUpdateUser = ``
+
         
         const allQueries = [ 
         {
-            text: `update usuarios set balance = balance - $2 where id = $1; `,
-            values: [idEmisor,  monto]
+            text: `update usuarios set balance = balance - $2 where id = (select id from usuarios where nombre = $1) returning *; `,
+            values: [body.emisor,  monto],
         },
         {
-            text: `update usuarios set balance = balance + $2 where id = $1; `,
-            values: [idReceptor, monto]
+            text: `update usuarios set balance = balance + $2 where id = (select id from usuarios where nombre = $1) returning *;  `,
+            values: [body.receptor, monto]
         },
         {
-            text: `insert into transferencias (emisor, receptor, monto, fecha) values ($1, $2, $3, $4);`,
-            values: [idEmisor, idReceptor, monto, fecha]
+            text: `insert into transferencias (emisor, receptor, monto, fecha) values ((select id from usuarios where nombre = $1), (select id from usuarios where nombre = $2), $3, $4) returning *;`,
+            values: [body.emisor, body.receptor, monto, fecha],
+            rowMode: 'array'
         }]
 
 
         let response;
         try {
             response = await queries.dbPoolTransaction(allQueries);
-            response = JSON.stringify(response);
-            console.log("Transaccion agregado: ", response);
+            //response = JSON.stringify(response);
         } catch (error) {
             console.log("Error en agregar transacciones: ", error.message);
             response = {
@@ -81,7 +96,7 @@ const agregarTransferencias = async (req, res) => {
                 message: error.message
             }
         } finally {
-            res.end(response);
+            res.end((response));
         }
     })
 };
